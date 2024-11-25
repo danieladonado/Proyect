@@ -23,27 +23,6 @@ def conectar():
                 print("Credenciales incorrectas. Por favor, inténtalo de nuevo.")
             else:
                 print(err)
-                
-def crear_carpeta_queries():
-    if not os.path.exists("Queries"):
-        os.mkdir("Queries")
-        
-def obtener_informacion(conexion, tabla, contador):
-    cursor = conexion.cursor(dictionary=True)
-    try:
-        cursor.execute(f"SELECT * FROM {tabla}")
-        resultados = cursor.fetchall()
-        if resultados:
-            archivo_json = f"Queries/{tabla}_{contador}.json"
-            with open(archivo_json, "w") as archivo:
-                json.dump(resultados, archivo, indent=4, default=str)
-            print(f"Resultados guardados en {archivo_json}")
-        else:
-            print(f"No se encontraron registros en la tabla '{tabla}'.")
-    except mysql.connector.Error as err:
-        print(f"Error al obtener información de la tabla '{tabla}': {err}")
-    finally:
-        cursor.close()
 
 def crear_tablas(conexion):
     cursor = conexion.cursor()
@@ -95,22 +74,17 @@ def crear_tablas(conexion):
 def seleccionar_tabla():
     tablas = ["medicos", "pacientes", "historia_medica", "citas"]
     while True:
-        print("Tablas disponibles:")
+        print("Selecciona una tabla:")
         for i, tabla in enumerate(tablas, 1):
             print(f"{i}. {tabla}")
-        
-        opcion = input("Elige una opción (nombre o número): ")
         try:
-            opcion_int = int(opcion)
-            if 1 <= opcion_int <= len(tablas):
-                return tablas[opcion_int - 1]
+            opcion = int(input("Elige una opción: "))
+            if 1 <= opcion <= len(tablas):
+                return tablas[opcion - 1]
             else:
-                print("Ingrese una opción válida.")
+                print("Ingrese una opcion valida")
         except ValueError:
-            if opcion in tablas:
-                return opcion
-            else:
-                print("Tabla no válida.")
+            print("Ingrese un valor numerico")
 
 def obtener_informacion(conexion, tabla):
     cursor = conexion.cursor()
@@ -337,15 +311,14 @@ def editar_informacion(conexion, tabla):
 
 def eliminar_informacion(conexion, tabla):
     cursor = conexion.cursor()
-    try:
-        id_registro = int(input(f"ID del registro a eliminar en '{tabla}': "))
-        cursor.execute(f"DELETE FROM {tabla} WHERE id = %s", (id_registro,))
-        conexion.commit()
-        print(f"Registro eliminado de la tabla '{tabla}'.")
-    except mysql.connector.Error as err:
-        print(f"Error al eliminar información de la tabla '{tabla}': {err}")
-    finally:
-        cursor.close()
+    id_elemento = verificar_id(conexion, tabla)
+    consulta = f"DELETE FROM {tabla} WHERE id = %s"
+
+    cursor.execute(consulta, (id_elemento,))
+    conexion.commit()
+    print("Información eliminada correctamente.")
+
+    cursor.close()
 
 def menu():
     conexion = conectar()

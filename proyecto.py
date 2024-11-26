@@ -347,10 +347,29 @@ def eliminar_informacion(conexion, tabla):
     finally:
         cursor.close()
 
+def importar_datos_json(conexion, ruta_archivo, tabla): 
+    try: 
+        with open(ruta_archivo, 'r') as file: 
+            datos = json.load(file) 
+        cursor = conexion.cursor() 
+        for registro in datos: 
+            columnas = ', '.join(registro.keys())
+            placeholders = ', '.join(['%s'] * len(registro)) 
+            valores = tuple(registro.values()) 
+            consulta = f"INSERT INTO {tabla} ({columnas}) VALUES ({placeholders})" 
+            cursor.execute(consulta, valores) 
+        conexion.commit() 
+        print(f"Datos importados correctamente en la tabla {tabla}.") 
+    except (mysql.connector.Error, json.JSONDecodeError, FileNotFoundError) as e: 
+        print(f"Error al importar datos: {e}") 
+    finally: cursor.close()
+
 def menu():
     conexion = conectar()
+    crear_carpeta_queries(conexion)
     if conexion:
         crear_tablas(conexion)
+        contador=1
         while True:
             try:
                 opcion = int(input("Elige una opción:\n1. Obtener Información\n2. Añadir Información\n3. Editar Información\n4. Eliminar Información\n5. Salir\n"))
@@ -359,7 +378,8 @@ def menu():
                 continue
             if opcion == 1:
                 tabla = seleccionar_tabla()
-                obtener_informacion(conexion, tabla)
+                obtener_informacion(conexion, tabla, contador)
+                contador+=1
             elif opcion == 2:
                 tabla = seleccionar_tabla()
                 añadir_informacion(conexion, tabla)

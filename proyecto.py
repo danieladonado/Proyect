@@ -112,14 +112,6 @@ def seleccionar_tabla():
             else:
                 print("Tabla no válida.")
 
-def obtener_informacion(conexion, tabla):
-    cursor = conexion.cursor()
-    cursor.execute(f"SELECT * FROM {tabla}")
-    resultados = cursor.fetchall()
-    for fila in resultados:
-        print(fila)
-    cursor.close()
-
 def verificar_id(conexion, tabla):
     cursor = conexion.cursor()
     while True:
@@ -365,8 +357,8 @@ def importar_datos_json(conexion, ruta_archivo, tabla):
     finally: cursor.close()
 
 def menu():
-    conexion = conectar()
     crear_carpeta_queries()
+    conexion = conectar()
     if conexion:
         crear_tablas(conexion)
         contador=1

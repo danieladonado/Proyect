@@ -366,7 +366,7 @@ def importar_datos_json(conexion, ruta_archivo, tabla):
 
 def menu():
     conexion = conectar()
-    crear_carpeta_queries(conexion)
+    crear_carpeta_queries()
     if conexion:
         crear_tablas(conexion)
         contador=1

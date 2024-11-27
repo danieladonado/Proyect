@@ -3,26 +3,60 @@ from mysql.connector import errorcode
 import json
 import os
 
+LOGIN_FILE = os.path.join(os.path.expanduser("~"), "Desktop", "db_login.json")
+def crear_archivo_login():
+    if not os.path.exists(LOGIN_FILE):
+        credenciales = {
+            "usuario": "admin_hospital",
+            "contraseña": "test1234*"
+        }
+        with open(LOGIN_FILE, "w") as file:
+            json.dump(credenciales, file, indent=4)
+        print(f"Archivo {LOGIN_FILE} creado con éxito en el escritorio.")
+    else:
+        print(f"El archivo {LOGIN_FILE} ya existe.")
+        
+def login():
+    try:
+        with open(LOGIN_FILE, "r") as file:
+            credenciales = json.load(file)
+        usuario_input = input("Usuario: ")
+        contraseña_input = input("Contraseña: ")
+        
+        if (usuario_input == credenciales["usuario"] and contraseña_input == credenciales["contraseña"]):
+            print("Inicio de sesión exitoso.")
+            return True
+        else:
+            print("Credenciales incorrectas. Inténtalo de nuevo.")
+            return False
+    except FileNotFoundError:
+        print(f"No se encontró el archivo {LOGIN_FILE}. Por favor, crea el archivo primero.")
+        return False
+        
 def conectar():
-    while True:
-        usuario = input("Usuario: ")
-        contraseña = input("Contraseña: ")
-        base_datos = "general_hospital"
-        try:
-            conexion = mysql.connector.connect(
-                host="127.0.0.1",
-                user=usuario,
-                password=contraseña
-            )
-            cursor = conexion.cursor()
-            cursor.execute(f"CREATE DATABASE IF NOT EXISTS {base_datos}")
-            conexion.database = base_datos
-            return conexion
-        except mysql.connector.Error as err:
-            if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-                print("Credenciales incorrectas. Por favor, inténtalo de nuevo.")
-            else:
-                print(err)
+    usuario_db = "admin"
+    contraseña_db = "bio4100"
+    base_datos = "general_hospital"
+    
+    try:
+    
+        conexion = mysql.connector.connect(
+            host="127.0.0.1",
+            user=usuario_db,
+            password=contraseña_db
+        )
+        cursor = conexion.cursor()
+        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {base_datos}")
+        conexion.database = base_datos
+        print(f"Conexión exitosa a la base de datos '{base_datos}'.")
+        return conexion
+    except mysql.connector.Error as err:
+        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+            print("Credenciales de base de datos incorrectas.")
+        else:
+            print(err)
+        return None
+
                 
 def crear_carpeta_queries():
     if not os.path.exists("Queries"):
@@ -357,9 +391,17 @@ def importar_datos_json(conexion, ruta_archivo, tabla):
     finally: cursor.close()
 
 def menu():
-    crear_carpeta_queries()
-    conexion = conectar()
-    if conexion:
+    try:
+        crear_carpeta_queries()
+        crear_archivo_login()
+        if not login():
+            print("No se pudo iniciar sesión. Fin del programa")
+            return
+        conexion = conectar()
+        if not conexion:
+            print("No se pudo conectar a la base de datos")
+            return
+        
         crear_tablas(conexion)
         contador=1
         while True:
@@ -370,21 +412,38 @@ def menu():
                 continue
             if opcion == 1:
                 tabla = seleccionar_tabla()
-                obtener_informacion(conexion, tabla, contador)
-                contador+=1
+                try:
+                    obtener_informacion(conexion, tabla, contador)
+                    contador+=1
+                except Exception as e:
+                    print(f"Error al obtener: {e}")
             elif opcion == 2:
                 tabla = seleccionar_tabla()
-                añadir_informacion(conexion, tabla)
+                try:
+                    añadir_informacion(conexion, tabla)
+                except Exception as e:
+                    print(f"Error al añadir: {e}")
             elif opcion == 3:
                 tabla = seleccionar_tabla()
-                editar_informacion(conexion, tabla)
+                try:
+                    editar_informacion(conexion, tabla)
+                except Exception as e:
+                    print(f"Error al editar: {e}")
             elif opcion == 4:
                 tabla = seleccionar_tabla()
-                eliminar_informacion(conexion, tabla)
+                try:
+                    eliminar_informacion(conexion, tabla)
+                except Exception as e:
+                    print(f"Error al eliminar: {e}")
             elif opcion == 5:
                 break
             else:
                 print("Ingrese una opcion valida")
+    except Exception as error_desconocido:
+        print(f"Ocurrió un error imprevisto: {error_desconocido}")
+    finally:
         conexion.close()
+        print("Conexión cerrada exitosamente")
+        
 
 menu()

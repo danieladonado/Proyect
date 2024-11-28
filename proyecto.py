@@ -20,44 +20,38 @@ def login():
     try:
         with open(LOGIN_FILE, "r") as file:
             credenciales = json.load(file)
-        usuario_input = input("Usuario: ")
-        contraseña_input = input("Contraseña: ")
-        
-        if (usuario_input == credenciales["usuario"] and contraseña_input == credenciales["contraseña"]):
-            print("Inicio de sesión exitoso.")
-            return True
-        else:
-            print("Credenciales incorrectas. Inténtalo de nuevo.")
-            return False
+        while True:
+            usuario_login = input("Usuario: ")
+            contraseña_login = input("Contraseña: ")
+            
+            if (usuario_login == credenciales["usuario"] and contraseña_login == credenciales["contraseña"]):
+                print("Inicio de sesión exitoso.")
+                return True
+            else:
+                print("Error al escribir el usuario o contraseña. Inténtalo de nuevo.")
+                
     except FileNotFoundError:
         print(f"No se encontró el archivo {LOGIN_FILE}. Por favor, crea el archivo primero.")
         return False
         
 def conectar():
-    usuario_db = "admin"
-    contraseña_db = "bio4100"
-    base_datos = "general_hospital"
-    
-    try:
-    
-        conexion = mysql.connector.connect(
-            host="127.0.0.1",
-            user=usuario_db,
-            password=contraseña_db
-        )
-        cursor = conexion.cursor()
-        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {base_datos}")
-        conexion.database = base_datos
-        print(f"Conexión exitosa a la base de datos '{base_datos}'.")
-        return conexion
-    except mysql.connector.Error as err:
-        if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
-            print("Credenciales de base de datos incorrectas.")
-        else:
-            print(err)
-        return None
+    while True:
+        usuario= "admin"
+        contraseña="bio4100"
+        base_datos = "general_hospital"
+        try:
+            conexion = mysql.connector.connect(
+                host="127.0.0.1",
+                user=usuario,
+                password=contraseña
+            )
+            cursor = conexion.cursor()
+            cursor.execute(f"CREATE DATABASE IF NOT EXISTS {base_datos}")
+            conexion.database = base_datos
+            return conexion
+        except mysql.connector.Error as err:
+                print(err)
 
-                
 def crear_carpeta_queries():
     if not os.path.exists("Queries"):
         os.mkdir("Queries")
@@ -101,7 +95,7 @@ def crear_tablas(conexion):
         "  id INT AUTO_INCREMENT PRIMARY KEY,"
         "  paciente_id INT,"
         "  descripcion TEXT,"
-        "  FOREIGN KEY (paciente_id) REFERENCES pacientes(id)"
+        "  FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE"
         ")"
     )
     tablas['citas'] = (
@@ -111,8 +105,8 @@ def crear_tablas(conexion):
         "  paciente_id INT,"
         "  fecha DATE,"
         "  hora TIME,"
-        "  FOREIGN KEY (medico_id) REFERENCES medicos(id),"
-        "  FOREIGN KEY (paciente_id) REFERENCES pacientes(id)"
+        "  FOREIGN KEY (medico_id) REFERENCES medicos(id) ON DELETE CASCADE,"
+        "  FOREIGN KEY (paciente_id) REFERENCES pacientes(id) ON DELETE CASCADE"
         ")"
     )
 
@@ -120,7 +114,6 @@ def crear_tablas(conexion):
         descripcion_tabla = tablas[nombre_tabla]
         try:
             cursor.execute(descripcion_tabla)
-            print(f"Tabla '{nombre_tabla}' creada.")
         except mysql.connector.Error as err:
             if err.errno != errorcode.ER_TABLE_EXISTS_ERROR:
                 print(err.msg)
@@ -364,7 +357,7 @@ def editar_informacion(conexion, tabla):
 def eliminar_informacion(conexion, tabla):
     cursor = conexion.cursor()
     try:
-        id_registro = int(input(f"ID del registro a eliminar en '{tabla}': "))
+        id_registro = verificar_id(conexion,tabla)
         cursor.execute(f"DELETE FROM {tabla} WHERE id = %s", (id_registro,))
         conexion.commit()
         print(f"Registro eliminado de la tabla '{tabla}'.")

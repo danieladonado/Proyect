@@ -53,11 +53,10 @@ def conectar() -> mysql.connector.MYSQLConnection | None:
     Retorna:
         Conexión a la base de datos o None en caso de error.
     """
-    
-    usuario= "admin"
-    contraseña="bio4100"
-    base_datos = "general_hospital"
     while True:
+        usuario= "admin"
+        contraseña="bio4100"
+        base_datos = "general_hospital"
         try:
             conexion = mysql.connector.connect(
                 host="127.0.0.1",

@@ -57,19 +57,19 @@ def conectar() -> mysql.connector.MYSQLConnection | None:
     usuario= "admin"
     contraseña="bio4100"
     base_datos = "general_hospital"
-    try:
-        conexion = mysql.connector.connect(
-            host="127.0.0.1",
-            user=usuario,
-            password=contraseña
-        )
-        cursor = conexion.cursor()
-        cursor.execute(f"CREATE DATABASE IF NOT EXISTS {base_datos}")
-        conexion.database = base_datos
-        return conexion
-    except mysql.connector.Error as err:
-            print(err)
-            return None
+    while True:
+        try:
+            conexion = mysql.connector.connect(
+                host="127.0.0.1",
+                user=usuario,
+                password=contraseña
+            )
+            cursor = conexion.cursor()
+            cursor.execute(f"CREATE DATABASE IF NOT EXISTS {base_datos}")
+            conexion.database = base_datos
+            return conexion
+        except mysql.connector.Error as err:
+                print(err)
 
 def crear_carpeta_queries() -> None:
     """

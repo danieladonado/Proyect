@@ -4,7 +4,7 @@ import json
 import os
 
 LOGIN_FILE = os.path.join(os.path.expanduser("~"), "Desktop", "db_login.json")
-def crear_archivo_login() -> None:
+def crear_archivo_login():
     """
     Crea un archivo JSON en el escritorio llamado "db_login.json" con las cuenta de inicio de sesión.
 
@@ -22,7 +22,7 @@ def crear_archivo_login() -> None:
     else:
         print(f"El archivo {LOGIN_FILE} ya existe.")
         
-def login() ->bool:
+def login():
     """_
     Inicia sesión en la base de datos.
 
@@ -46,7 +46,7 @@ def login() ->bool:
         print(f"No se encontró el archivo {LOGIN_FILE}. Por favor, crea el archivo primero.")
         return False
         
-def conectar() -> mysql.connector.MYSQLConnection | None:
+def conectar():
     """
     Conecta a la base de datos y selecciona la base de datos "general_hospital".
     
@@ -70,7 +70,7 @@ def conectar() -> mysql.connector.MYSQLConnection | None:
         except mysql.connector.Error as err:
                 print(err)
 
-def crear_carpeta_queries() -> None:
+def crear_carpeta_queries():
     """
     Crea una carpeta llamada "Queries" en caso de que no exista para guardar 
     los archivos json que se generen al hacer una query de busqueda.
@@ -81,7 +81,7 @@ def crear_carpeta_queries() -> None:
     if not os.path.exists("Queries"):
         os.mkdir("Queries")
         
-def obtener_informacion(conexion: mysql.connector.MYSQLConnection, tabla: str, contador: int) -> str:
+def obtener_informacion(conexion, tabla, contador):
     """
     Obtiene todos los registros de una tabla y los guarda en un archivo json.
     
@@ -105,7 +105,7 @@ def obtener_informacion(conexion: mysql.connector.MYSQLConnection, tabla: str, c
     finally:
         cursor.close()
 
-def crear_tablas(conexion: mysql.connector.MYSQLConnection) -> bool:
+def crear_tablas(conexion):
     """
     Crea las tablas que se necesitan en la base de datos.
     
@@ -157,7 +157,7 @@ def crear_tablas(conexion: mysql.connector.MYSQLConnection) -> bool:
                 print(err.msg)
     cursor.close()
 
-def seleccionar_tabla() -> str:
+def seleccionar_tabla():
     """
     Selecciona una tabla de la base de datos.
     
@@ -183,7 +183,7 @@ def seleccionar_tabla() -> str:
             else:
                 print("Tabla no válida.")
 
-def verificar_id(conexion: mysql.connector.MYSQLConnection, tabla: str) -> int:
+def verificar_id(conexion, tabla):
     """
     Verifica que un id exista en una tabla.
 
@@ -204,7 +204,7 @@ def verificar_id(conexion: mysql.connector.MYSQLConnection, tabla: str) -> int:
             print("Ingrese un valor numerico")
     cursor.close()
 
-def añadir_informacion(conexion: mysql.connector.MYSQLConnection, tabla: str) -> bool:
+def añadir_informacion(conexion, tabla):
     """
     Añade información a una tabla.
     Retorna:
@@ -309,7 +309,7 @@ def añadir_informacion(conexion: mysql.connector.MYSQLConnection, tabla: str) -
         print(err)
     cursor.close()
 
-def editar_informacion(conexion: mysql.connector.MySQLConnection, tabla:str) -> None:
+def editar_informacion(conexion, tabla):
     """
     Edita información en una tabla.
     Retorna:
@@ -414,7 +414,7 @@ def editar_informacion(conexion: mysql.connector.MySQLConnection, tabla:str) -> 
         print(err)
     cursor.close()
 
-def eliminar_informacion(conexion: mysql.connector.MySQLConnection, tabla: str) -> None:
+def eliminar_informacion(conexion, tabla):
     """
     Elimina un registro de una tabla.
     Retorna:
@@ -431,7 +431,7 @@ def eliminar_informacion(conexion: mysql.connector.MySQLConnection, tabla: str) 
     finally:
         cursor.close()
 
-def importar_datos_json(conexion:mysql.connector.MySQLConnection, ruta_archivo:str, tabla:str) -> None: 
+def importar_datos_json(conexion, ruta_archivo:str, tabla): 
     """
     Importa datos desde un archivo json a una tabla de la base de datos.
     Retorna:
@@ -453,7 +453,7 @@ def importar_datos_json(conexion:mysql.connector.MySQLConnection, ruta_archivo:s
         print(f"Error al importar datos: {e}") 
     finally: cursor.close()
 
-def menu()-> None:
+def menu():
     """
     Muestra el menú principal y permite seleccionar la opción deseada.
     """

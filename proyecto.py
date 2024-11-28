@@ -4,27 +4,39 @@ import json
 import os
 
 LOGIN_FILE = os.path.join(os.path.expanduser("~"), "Desktop", "db_login.json")
-def crear_archivo_login():
+def crear_archivo_login() -> None:
+    """
+    Crea un archivo JSON en el escritorio llamado "db_login.json" con las cuenta de inicio de sesión.
+
+    Retorna:
+        No retorna ningun valor
+    """
     if not os.path.exists(LOGIN_FILE):
-        credenciales = {
+        cuenta = {
             "usuario": "admin_hospital",
             "contraseña": "test1234*"
         }
         with open(LOGIN_FILE, "w") as file:
-            json.dump(credenciales, file, indent=4)
+            json.dump(cuenta, file, indent=4)
         print(f"Archivo {LOGIN_FILE} creado con éxito en el escritorio.")
     else:
         print(f"El archivo {LOGIN_FILE} ya existe.")
         
-def login():
+def login() ->bool:
+    """_
+    Inicia sesión en la base de datos.
+
+    Retorna:
+        Conexión a la base de datos o False en caso de error.
+    """
     try:
         with open(LOGIN_FILE, "r") as file:
-            credenciales = json.load(file)
+            cuenta = json.load(file)
         while True:
             usuario_login = input("Usuario: ")
             contraseña_login = input("Contraseña: ")
             
-            if (usuario_login == credenciales["usuario"] and contraseña_login == credenciales["contraseña"]):
+            if (usuario_login == cuenta["usuario"] and contraseña_login == cuenta["contraseña"]):
                 print("Inicio de sesión exitoso.")
                 return True
             else:
@@ -34,7 +46,13 @@ def login():
         print(f"No se encontró el archivo {LOGIN_FILE}. Por favor, crea el archivo primero.")
         return False
         
-def conectar():
+def conectar() -> mysql.connector.MYSQLConnection | None:
+    """
+    Conecta a la base de datos y selecciona la base de datos "general_hospital".
+    
+    Retorna:
+        Conexión a la base de datos o None en caso de error.
+    """
     while True:
         usuario= "admin"
         contraseña="bio4100"
@@ -52,11 +70,25 @@ def conectar():
         except mysql.connector.Error as err:
                 print(err)
 
-def crear_carpeta_queries():
+def crear_carpeta_queries() -> None:
+    """
+    Crea una carpeta llamada "Queries" en caso de que no exista para guardar 
+    los archivos json que se generen al hacer una query de busqueda.
+    
+    Retorna:
+     No retorna ningún valor, solo crea la carpeta.
+    """
     if not os.path.exists("Queries"):
         os.mkdir("Queries")
         
-def obtener_informacion(conexion, tabla, contador):
+def obtener_informacion(conexion: mysql.connector.MYSQLConnection, tabla: str, contador: int) -> str:
+    """
+    Obtiene todos los registros de una tabla y los guarda en un archivo json.
+    
+    Retorna:
+        El nombre del archivo json donde se guardaron los resultados o None si se presenta un error
+    
+    """
     cursor = conexion.cursor(dictionary=True)
     try:
         cursor.execute(f"SELECT * FROM {tabla}")
@@ -73,7 +105,13 @@ def obtener_informacion(conexion, tabla, contador):
     finally:
         cursor.close()
 
-def crear_tablas(conexion):
+def crear_tablas(conexion: mysql.connector.MYSQLConnection) -> bool:
+    """
+    Crea las tablas que se necesitan en la base de datos.
+    
+    Returna:
+    True si las tablas se crearon correctamente, False en caso contrario.
+    """
     cursor = conexion.cursor()
     tablas = {}
     tablas['medicos'] = (
@@ -119,7 +157,13 @@ def crear_tablas(conexion):
                 print(err.msg)
     cursor.close()
 
-def seleccionar_tabla():
+def seleccionar_tabla() -> str:
+    """
+    Selecciona una tabla de la base de datos.
+    
+    Retorna:
+        Nombre de la tabla seleccionada.
+    """
     tablas = ["medicos", "pacientes", "historia_medica", "citas"]
     while True:
         print("Tablas disponibles:")
@@ -139,7 +183,13 @@ def seleccionar_tabla():
             else:
                 print("Tabla no válida.")
 
-def verificar_id(conexion, tabla):
+def verificar_id(conexion: mysql.connector.MYSQLConnection, tabla: str) -> int:
+    """
+    Verifica que un id exista en una tabla.
+
+    Returna:
+        El id si existe, o None si no existe.
+    """
     cursor = conexion.cursor()
     while True:
         try:
@@ -154,7 +204,12 @@ def verificar_id(conexion, tabla):
             print("Ingrese un valor numerico")
     cursor.close()
 
-def añadir_informacion(conexion, tabla):
+def añadir_informacion(conexion: mysql.connector.MYSQLConnection, tabla: str) -> bool:
+    """
+    Añade información a una tabla.
+    Retorna:
+        True si la información se añadió correctamente, False en caso contrario.
+    """
     cursor = conexion.cursor()
     if tabla == "medicos":
         nombre = input("Nombre: ")
@@ -254,7 +309,12 @@ def añadir_informacion(conexion, tabla):
         print(err)
     cursor.close()
 
-def editar_informacion(conexion, tabla):
+def editar_informacion(conexion: mysql.connector.MySQLConnection, tabla:str) -> None:
+    """
+    Edita información en una tabla.
+    Retorna:
+        No devuelve ningún  valor, solo actualiza el registro elegido.
+    """
     cursor = conexion.cursor()
     id_elemento = verificar_id(conexion, tabla)
     if tabla == "medicos":
@@ -354,7 +414,12 @@ def editar_informacion(conexion, tabla):
         print(err)
     cursor.close()
 
-def eliminar_informacion(conexion, tabla):
+def eliminar_informacion(conexion: mysql.connector.MySQLConnection, tabla: str) -> None:
+    """
+    Elimina un registro de una tabla.
+    Retorna:
+        No devuelve ningún  valor, solo elimina el registro elegido.
+    """
     cursor = conexion.cursor()
     try:
         id_registro = verificar_id(conexion,tabla)
@@ -366,7 +431,12 @@ def eliminar_informacion(conexion, tabla):
     finally:
         cursor.close()
 
-def importar_datos_json(conexion, ruta_archivo, tabla): 
+def importar_datos_json(conexion:mysql.connector.MySQLConnection, ruta_archivo:str, tabla:str) -> None: 
+    """
+    Importa datos desde un archivo json a una tabla de la base de datos.
+    Retorna:
+        None si no hay errores, sino muestra el error.
+    """
     try: 
         with open(ruta_archivo, 'r') as file: 
             datos = json.load(file) 
@@ -383,7 +453,10 @@ def importar_datos_json(conexion, ruta_archivo, tabla):
         print(f"Error al importar datos: {e}") 
     finally: cursor.close()
 
-def menu():
+def menu()-> None:
+    """
+    Muestra el menú principal y permite seleccionar la opción deseada.
+    """
     try:
         crear_carpeta_queries()
         crear_archivo_login()
